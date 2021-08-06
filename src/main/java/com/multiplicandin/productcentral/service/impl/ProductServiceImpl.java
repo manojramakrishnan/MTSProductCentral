@@ -1,72 +1,59 @@
 package com.multiplicandin.productcentral.service.impl;
 
 import java.util.List;
-
-import javax.validation.Valid;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import com.multiplicandin.productcentral.dao.ProductDAO;
 import com.multiplicandin.productcentral.model.Product;
+import com.multiplicandin.productcentral.repository.ProductRepository;
 import com.multiplicandin.productcentral.service.ProductService;
 
 @Service("productService")
 public class ProductServiceImpl implements ProductService {
 
 	@Autowired
-	private ProductDAO productDAO;
+	private ProductRepository productRepository;
 
 	@Override
-	public List<Product> findAll() {
-		// TODO Auto-generated method stub
-		return productDAO.findAll();
-	}
-
-	@Override
-	public List<Product> findAllOutOfStock() {
-		// TODO Auto-generated method stub
-		return productDAO.findAllOutOfstock();
-	}
-	
-	@Override
-	public Product findById(Integer id) {
-		return productDAO.findById(id);
-	}
-	@Override
-	public Product createNewProduct(@Valid Product product) {
-		
-		return productDAO.createNewProduct(product);
-	}
-	@Override
-	public Product findAllByProductId(Integer productId) {
-		return productDAO.findAllByProductId(productId);
-	}
-	
-	@Override
-	public Product getOne(Integer id) {
-		
-		return productDAO.getOne(id);
+	public List<Product> getAllProducts() {
+		return productRepository.findAll();
 	}
 
 	@Override
-	public Product update(Product product) {
-		
-		return productDAO.update(product);
-		
+	public void saveProduct(Product product) {
+		this.productRepository.save(product);
 	}
-	@Override
-	public void deleteById(Integer id) {
-		
-		 productDAO.deleteById(id);
-		
-	
-}
 
 	@Override
-	public List<Product> findAllByProductId(@Valid Product product) {
-		// TODO Auto-generated method stub
-		return productDAO.fidnAllByProductId(product);
+	public Product getProductById(long id) {
+		Optional<Product> optional = productRepository.findById(id);
+		Product product = null;
+		if (optional.isPresent()) {
+			product = optional.get();
+		} else {
+			throw new RuntimeException(" Employee not found for id :: " + id);
+		}
+		return product;
+	}
+
+	@Override
+	public void deleteProductById(long id) {
+		this.productRepository.deleteById(id);
+	}
+
+	@Override
+	public Page<Product> findPaginated(int pageNo, int pageSize, String sortField, String sortDirection) {
+		Sort sort = sortDirection.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortField).ascending() :
+			Sort.by(sortField).descending();
+		
+		Pageable pageable = PageRequest.of(pageNo - 1, pageSize, sort);
+		return this.productRepository.findAll(pageable);
 	}
 
 }
