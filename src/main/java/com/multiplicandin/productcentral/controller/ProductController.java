@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,6 +22,19 @@ public class ProductController {
 
 	@Autowired
 	private ProductService productService;
+
+	@Autowired
+	private KafkaTemplate<String,Product> kafkaTemplate;
+	
+	private static final String Topic = "Product_Kafka";
+	
+	 
+	private String Post(Product product) {
+		
+		return "Product Published Successfully";
+	}
+	
+	
 	
 	// display list of employees
 	@GetMapping("/")
@@ -39,7 +53,9 @@ public class ProductController {
 	@PostMapping("/saveProduct")
 	public String saveProduct(@ModelAttribute("product") Product product) {
 		// save product to database
-		productService.saveProduct(product);
+		Product products=productService.saveProduct(product);
+		kafkaTemplate.send(Topic, new Product(products.getId(), products.getProductName(),products.getProductCode(),products.getCategory(),products.getQuantity()));
+		Post(product);
 		return "redirect:/";
 	}
 	
