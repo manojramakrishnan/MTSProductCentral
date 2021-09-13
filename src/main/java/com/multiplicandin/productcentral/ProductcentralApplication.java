@@ -8,6 +8,9 @@ public class ProductcentralApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(ProductcentralApplication.class, args);
+		System.out.println("Hello!!!");
 	}
+	
+	
 
 }
